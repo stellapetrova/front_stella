@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Message from '../Message';
 import TypingIndicator from '../TypingIndicator';
 import { EmptyState } from '../../ui/EmptyState';
+import { Message as MessageType } from '../../../types/message';
 
 const ListContainer = styled.div`
   flex: 1;
@@ -10,6 +11,7 @@ const ListContainer = styled.div`
   padding: 1rem;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 `;
 
 const EndOfList = styled.div`
@@ -17,73 +19,21 @@ const EndOfList = styled.div`
   clear: both;
 `;
 
-interface MessageType {
-  id: string;
-  variant: 'user' | 'assistant';
-  sender: string;
-  content: string;
-  timestamp: string;
-}
-
 interface MessageListProps {
-  messages?: MessageType[];
-  isTyping?: boolean;
+  messages: MessageType[];
+  isLoading?: boolean;
 }
-
-const mockMessages: MessageType[] = [
-  {
-    id: '1',
-    variant: 'assistant',
-    sender: 'GigaChat',
-    content: 'Hello! How can I help you today?',
-    timestamp: '10:00 AM'
-  },
-  {
-    id: '2',
-    variant: 'user',
-    sender: 'You',
-    content: 'Can you explain what React is?',
-    timestamp: '10:01 AM'
-  },
-  {
-    id: '3',
-    variant: 'assistant',
-    sender: 'GigaChat',
-    content: 'React is a JavaScript library for building user interfaces. Here are some key features:\n\n- **Component-based architecture**\n- *Virtual DOM* for performance\n- One-way data flow\n- JSX syntax\n\n```jsx\nfunction Welcome() {\n  return <h1>Hello, React!</h1>;\n}\n```',
-    timestamp: '10:01 AM'
-  },
-  {
-    id: '4',
-    variant: 'user',
-    sender: 'You',
-    content: 'What about hooks?',
-    timestamp: '10:02 AM'
-  },
-  {
-    id: '5',
-    variant: 'assistant',
-    sender: 'GigaChat',
-    content: 'Hooks are functions that let you "hook into" React state and lifecycle features. Common hooks include:\n1. useState\n2. useEffect\n3. useContext\n4. useReducer',
-    timestamp: '10:02 AM'
-  },
-  {
-    id: '6',
-    variant: 'user',
-    sender: 'You',
-    content: 'Thanks for the explanation!',
-    timestamp: '10:03 AM'
-  }
-];
 
 export const MessageList: React.FC<MessageListProps> = ({ 
-  messages = mockMessages, 
-  isTyping = true 
+  messages, 
+  isLoading = false 
 }) => {
   const endRef = useRef<HTMLDivElement>(null);
 
+  // Автоскролл к последнему сообщению при изменении messages
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  }, [messages, isLoading]);
 
   if (messages.length === 0) {
     return (
@@ -96,10 +46,17 @@ export const MessageList: React.FC<MessageListProps> = ({
   return (
     <ListContainer>
       {messages.map(message => (
-        <Message key={message.id} {...message} />
+        <Message
+          key={message.id}
+          variant={message.role === 'user' ? 'user' : 'assistant'}
+          sender={message.role === 'user' ? 'You' : 'GigaChat'}
+          content={message.content}
+          timestamp={message.timestamp}
+        />
       ))}
       
-      {isTyping && (
+      {/* Показываем индикатор загрузки, если isLoading true */}
+      {isLoading && (
         <div style={{ marginBottom: '1rem' }}>
           <TypingIndicator />
         </div>

@@ -11,7 +11,7 @@ interface MessageProps {
 
 const MessageContainer = styled.div<{ variant: 'user' | 'assistant' }>`
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   justify-content: ${props => props.variant === 'user' ? 'flex-end' : 'flex-start'};
 `;
 

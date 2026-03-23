@@ -38,6 +38,11 @@ const StyledTextArea = styled.textarea`
     border-color: var(--color-accent);
   }
   
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
   &::placeholder {
     color: var(--color-text-secondary);
   }
@@ -57,7 +62,7 @@ const IconButton = styled.button`
   color: var(--color-text-secondary);
   border-radius: 0.375rem;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: var(--color-bg-secondary);
   }
   
@@ -81,6 +86,7 @@ export const InputArea: React.FC<InputAreaProps> = ({
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Автоматическая подстройка высоты textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -90,9 +96,10 @@ export const InputArea: React.FC<InputAreaProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Отправляем только если есть сообщение и не идет генерация
     if (message.trim() && !isGenerating) {
       onSendMessage(message);
-      setMessage('');
+      setMessage(''); // Очищаем поле после отправки
     }
   };
 
@@ -102,6 +109,9 @@ export const InputArea: React.FC<InputAreaProps> = ({
       handleSubmit(e);
     }
   };
+
+  // Проверяем, активна ли кнопка отправки
+  const isSendDisabled = !message.trim() || isGenerating;
 
   return (
     <InputContainer>
@@ -114,11 +124,16 @@ export const InputArea: React.FC<InputAreaProps> = ({
             onKeyDown={handleKeyDown}
             placeholder="Type your message... (Shift+Enter for new line)"
             rows={1}
+            disabled={isGenerating}
           />
         </TextAreaWrapper>
         
         <ActionButtons>
-          <IconButton type="button" title="Attach file">
+          <IconButton 
+            type="button" 
+            title="Attach file"
+            disabled={isGenerating}
+          >
             📎
           </IconButton>
           
@@ -127,7 +142,11 @@ export const InputArea: React.FC<InputAreaProps> = ({
               ⏹️ Stop
             </Button>
           ) : (
-            <Button type="submit" variant="primary" disabled={!message.trim()}>
+            <Button 
+              type="submit" 
+              variant="primary" 
+              disabled={isSendDisabled}
+            >
               Send
             </Button>
           )}
